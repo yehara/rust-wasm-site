@@ -34,6 +34,15 @@ function js_hash() {
 //measure(js_hash);
 
 
+function js_hash_array(buf) {
+  var hash = crypto.createHash('sha1');
+  hash.update(buf);
+  console.log("js_hash_array: " + hash.digest('hex'));
+} 
+function wasm_hash_array(buf) {
+  var hash = wasm.send_box(buf);
+  console.log("wasm_hash_array: " + hash);
+}
 
 
 var input = document.querySelector('input[type=file]');
@@ -45,10 +54,10 @@ input.addEventListener('change', function() {
     console.error(err);
   }
   reader.onload = function() {
-    var buf = new Buffer(reader.result);
-    var hash = crypto.createHash('sha1');
-    hash.update(buf);
-    console.log(hash.digest('hex'));
+    // var buf = new Buffer(reader.result);
+    measure(function(){ js_hash_array(new Buffer(reader.result)); });
+    measure(function(){ wasm_hash_array(new Uint8Array(reader.result)); });
   } 
   reader.readAsArrayBuffer(file);
+
 }, false);
