@@ -1,5 +1,6 @@
 import * as wasm from "rust-wasm-hash";
 import jsSHA from "jssha";
+import crypto from 'crypto';
 
 var n = 10000000;
 
@@ -29,6 +30,25 @@ function js_hash() {
   console.log(buf2hex(hash));
 }
 
-measure(wasm_hash);
-measure(js_hash);
+//measure(wasm_hash);
+//measure(js_hash);
 
+
+
+
+var input = document.querySelector('input[type=file]');
+input.addEventListener('change', function() {
+  var file = input.files[0];
+  if(file == null) return;
+  var reader = new FileReader();
+  reader.onerror = function(err) {
+    console.error(err);
+  }
+  reader.onload = function() {
+    var buf = new Buffer(reader.result);
+    var hash = crypto.createHash('sha1');
+    hash.update(buf);
+    console.log(hash.digest('hex'));
+  } 
+  reader.readAsArrayBuffer(file);
+}, false);
