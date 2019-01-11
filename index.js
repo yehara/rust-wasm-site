@@ -36,14 +36,13 @@ function js_hash() {
 
 function js_hash_array(buf) {
   var hash = crypto.createHash('sha1');
-  hash.update(buf);
+  hash.update(new Buffer(buf));
   console.log("js_hash_array: " + hash.digest('hex'));
 } 
 function wasm_hash_array(buf) {
-  var hash = wasm.send_box(buf);
+  var hash = wasm.hash_array(new Uint8Array(buf));
   console.log("wasm_hash_array: " + hash);
 }
-
 
 var input = document.querySelector('input[type=file]');
 input.addEventListener('change', function() {
@@ -52,12 +51,35 @@ input.addEventListener('change', function() {
   var reader = new FileReader();
   reader.onerror = function(err) {
     console.error(err);
-  }
+  };
   reader.onload = function() {
-    // var buf = new Buffer(reader.result);
-    measure(function(){ js_hash_array(new Buffer(reader.result)); });
-    measure(function(){ wasm_hash_array(new Uint8Array(reader.result)); });
-  } 
+    measure(function(){ wasm_hash_array(reader.result); });
+    measure(function(){ js_hash_array(reader.result); });
+  };
   reader.readAsArrayBuffer(file);
 
 }, false);
+
+
+function tarai(x, y, z) {
+  if(x <= y){
+    return y;
+  }
+  return tarai(tarai(x-1, y, z), tarai(y-1, z, x), tarai(z-1, x, y));
+}
+
+function start_tarai() {
+  (function (x, y, z) {
+    console.log("start x:" + x + " y:" + y + " z:" + z);
+    measure(function () {
+      console.log("js_tarai: " + tarai(x, y, z));
+    });
+    measure(function () {
+      console.log("wasm_tarai: " + wasm.tarai(x, y, z));
+    });
+  })(12, 6, 0);
+}
+
+document.querySelector('#start_tarai').addEventListener("click", function(){
+  start_tarai();
+});
