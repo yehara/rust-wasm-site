@@ -8,11 +8,19 @@ function log(msg) {
   console.log(msg);
 }
 
-function measure(func) {
-  var start = performance.now();
-  func();
-  var end = performance.now();
-  log(Math.round(end - start) + " ms");
+function measure(func, n = 5) {
+  var sum = 0;
+  for(var i=0; i<n; i++) {
+    var start = performance.now();
+    func();
+    var end = performance.now();
+    var elapsed = Math.round(end - start)
+    log("try " + (i+1) + " -> " + elapsed + " ms");
+    sum += elapsed;
+  }
+  var ave = Math.round(sum / n);
+  log("average: " + ave + " ms");
+  return ave;
 }
 
 function js_hash_array(buf) {
