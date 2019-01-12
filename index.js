@@ -1,5 +1,4 @@
 import * as wasm from "rust-wasm-hash";
-import jsSHA from "jssha";
 import crypto from 'crypto';
 
 function log(msg) {
@@ -33,7 +32,7 @@ function wasm_hash_array(buf) {
   log("wasm_hash_array: " + hash);
 }
 
-var input = document.querySelector('input[type=file]');
+var input = document.querySelector('#file_input');
 input.addEventListener('change', function() {
   var file = input.files[0];
   if(file == null) return;
@@ -48,6 +47,36 @@ input.addEventListener('change', function() {
   reader.readAsArrayBuffer(file);
 }, false);
 
+var input2 = document.querySelector('#file_input2');
+input2.addEventListener('change', function() {
+  var file = input2.files[0];
+  if(file == null) return;
+  var reader = new FileReader();
+  reader.onerror = function(err) {
+    console.error(err);
+  };
+  reader.onload = function() {
+    wasm_convert_image(reader.result);
+  };
+  reader.readAsArrayBuffer(file);
+}, false);
+
+
+
+function wasm_convert_image(buf) {
+  showImage(new Uint8Array(buf), "sourceImage");
+  var result = wasm.convert_image(new Uint8Array(buf));
+  showImage(result, "targetImage");
+}
+
+var showImage = function(buf, targetId) {
+  var binaryData = "";
+  for (var i = 0, len = buf.byteLength; i < len; i++) {
+    binaryData += String.fromCharCode(buf[i]);
+  }
+  var img = document.getElementById(targetId);
+  img.src = "data:image/jpeg;base64," + window.btoa(binaryData);
+}
 
 /*
 function tarai(x, y, z) {
